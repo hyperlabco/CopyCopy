@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CopyCopy - Typing Training</title>
+    <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Geist Mono', monospace;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+        }
+
+        h1 {
+            margin-bottom: 1.5rem;
+            color: #4a4a4a;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        #sampleText {
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+            color: #666;
+        }
+
+        #typingArea {
+            width: calc(100% - 1.6rem);
+            height: 100px;
+            font-size: 1rem;
+            font-family: 'Geist Mono', monospace;
+            padding: 0.8rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        #typingArea:focus {
+            border-color: #007bff;
+        }
+
+        .results {
+            display: flex;
+            justify-content: space-around;
+            font-size: 1.1rem;
+        }
+
+        .results p {
+            margin: 0;
+            padding: 0.5rem 1rem;
+            background-color: #f8f9fa;
+            border-radius: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .results span {
+            font-weight: 700;
+            color: #007bff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Train your fingers. Write like Ogilvy.</h1>
+        <p id="sampleText">At 60 miles an hour, the loudest noise in this new Rolls-Royce comes from the electric clock.
+        </p>
+
+        <textarea id="typingArea" placeholder="Start typing here..."></textarea>
+
+        <div class="results">
+            <p>Accuracy: <span id="accuracy">100</span>%</p>
+            <p>WPM: <span id="wpm">0</span></p>
+        </div>
+
+        <div class="game-info">
+            <p>Level: <span id="level">1</span></p>
+            <p>Score: <span id="score">0</span></p>
+        </div>
+    </div>
+
+    <script>
+        const sampleText = document.getElementById('sampleText');
+        const typingArea = document.getElementById('typingArea');
+        const accuracyDisplay = document.getElementById('accuracy');
+        const wpmDisplay = document.getElementById('wpm');
+        const levelDisplay = document.getElementById('level');
+        const scoreDisplay = document.getElementById('score');
+
+        let startTime;
+        let hasStarted = false;
+        let level = 1;
+        let score = 0;
+
+        const texts = [
+            "At 60 miles an hour, the loudest noise in this new Rolls-Royce comes from the electric clock.",
+            "A razor with quite a good blade is like an acrobat with quite a good grip. - Wilkinson Sword",
+            "Honestly now, did you spend your youth dreaming about someday owning a Nissan or a Mitsubishi? - Porsche"
+        ];
+
+        function updateSampleText() {
+            sampleText.innerText = texts[level - 1] || "Congratulations! You've mastered the art of copywriting!";
+        }
+
+        function updateLevel() {
+            level++;
+            levelDisplay.textContent = level;
+            updateSampleText();
+            resetTypingArea();
+        }
+
+        function resetTypingArea(tryAgain = false) {
+            typingArea.value = '';
+            typingArea.placeholder = tryAgain ? "Try again..." : "Start typing here...";
+            hasStarted = false;
+            score = 0;
+            scoreDisplay.textContent = score;
+            accuracyDisplay.textContent = '100.00';
+            wpmDisplay.textContent = '0';
+            sampleText.innerHTML = sampleText.innerText; // Reset sample text formatting
+        }
+
+        updateSampleText();
+
+        // Focus on the typing area when the page loads
+        window.addEventListener('load', () => {
+            typingArea.focus();
+        });
+
+        typingArea.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent newline in textarea
+                const accuracy = parseFloat(accuracyDisplay.textContent);
+                if (accuracy >= 95) {
+                    updateLevel();
+                } else {
+                    resetTypingArea(true);
+                }
+            }
+        });
+
+        typingArea.addEventListener('input', () => {
+            const userInput = typingArea.value;
+            const sampleTextContent = sampleText.innerText;
+
+            // Start the timer on the first input
+            if (!hasStarted) {
+                startTime = new Date();
+                hasStarted = true;
+            }
+
+            let correctChars = 0;
+            let totalChars = 0;
+            let coloredText = '';
+
+            const userWords = userInput.split(/\s+/);
+            const sampleWords = sampleTextContent.split(/\s+/);
+
+            for (let i = 0; i < sampleWords.length; i++) {
+                const sampleWord = sampleWords[i];
+                const userWord = userWords[i] || '';
+                
+                for (let j = 0; j < sampleWord.length; j++) {
+                    if (j < userWord.length) {
+                        if (userWord[j] === sampleWord[j]) {
+                            coloredText += `<span style="font-weight: bold;">${sampleWord[j]}</span>`;
+                            correctChars++;
+                        } else {
+                            coloredText += `<span style="color: red; font-weight: bold;">${sampleWord[j]}</span>`;
+                        }
+                        totalChars++;
+                    } else {
+                        coloredText += sampleWord[j];
+                    }
+                }
+                
+                // Add space between words, except for the last word
+                if (i < sampleWords.length - 1) {
+                    coloredText += ' ';
+                    totalChars++;
+                    if (i < userWords.length - 1) {
+                        correctChars++;
+                    }
+                }
+            }
+
+            sampleText.innerHTML = coloredText;
+
+            // Calculate accuracy based on total characters typed
+            const accuracy = totalChars > 0 ? ((correctChars / totalChars) * 100).toFixed(2) : '100.00';
+            accuracyDisplay.textContent = accuracy;
+
+            // Calculate WPM
+            const elapsedTime = (new Date() - startTime) / 1000 / 60; // time in minutes
+            const wordsTyped = userWords.length;
+            const wpm = (wordsTyped / elapsedTime).toFixed(2);
+            wpmDisplay.textContent = isNaN(wpm) ? 0 : wpm;
+
+            // Update score
+            score = correctChars;
+            scoreDisplay.textContent = score;
+        });
+    </script>
+</body>
+
+</html>
